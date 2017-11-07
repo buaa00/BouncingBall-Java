@@ -9,6 +9,5 @@ public class Ball {
 	private int height;
 	
 	public Ball() {
-		
 	}
 }
