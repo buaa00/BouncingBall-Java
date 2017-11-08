@@ -9,6 +9,7 @@ public class Main {
 		new BouncingBallGame(bbHost);
 		
 		bbHost.setState("GameState");
+		System.out.println("KR");
 	}
 
 }
