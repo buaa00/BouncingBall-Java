@@ -77,7 +77,7 @@ public abstract class GameObject {
 	}
 	
 	//abstract methods
-	public abstract void update();
+	public abstract boolean update();
 	public abstract void draw(Graphics2D g);
 	public abstract boolean intersect(GameObject o);
 	
