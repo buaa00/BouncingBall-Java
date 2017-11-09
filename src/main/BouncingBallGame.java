@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Random;
-
+import java.awt.event.KeyEvent;
 import game_objects.Ball;
 import game_objects.BigBlock;
 import game_objects.DrawingType;
@@ -12,6 +12,8 @@ import game_objects.GameObject;
 import game_objects.NormalBlock;
 import game_objects.SupriseBlock;
 import game_objects.Wall;
+import game_objects.NormalBlock;
+import game_objects.Stick;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
@@ -19,11 +21,14 @@ import rafgfxlib.GameState;
 public class BouncingBallGame extends GameState{
 	
 	private Ball ball;
-	
+	private Stick stick;
 	private int scrWdith;
 	private int scrHeight;
 	private ArrayList<GameObject> blocks;
 	private ArrayList<GameObject> walls;
+	private final int stickWidth = 100;
+	private final int stickHeight = 15;
+	
 	public BouncingBallGame(GameHost host) {
 		super(host);
 		blocks=new ArrayList<>();
@@ -32,12 +37,14 @@ public class BouncingBallGame extends GameState{
 		scrWdith = host.getWidth();
 		scrHeight = host.getHeight();
 		
-		ball = new Ball(2, 1, DrawingType.Oval);
 		//create walls left and right
 		Wall leftWall=new Wall(0,0,20,scrHeight,DrawingType.Rect);
 		Wall rightWall=new Wall(scrWdith-20,0,20,scrHeight,DrawingType.Rect);
 		walls.add(leftWall); walls.add(rightWall);
 		
+		//create ball and stick
+		ball = new Ball(2, 2, DrawingType.Oval);
+		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 80, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		//create blocks and random walls
 		Random roller=new Random();
 		int fixWidth=50; int fixHeight=20;
@@ -64,11 +71,13 @@ public class BouncingBallGame extends GameState{
 				}
 			}
 		}
-	//	ball.setX(20);
-	//	ball.setY(20);
-	//	ball.setWidth(15);
-	//	ball.setHeight(15);
-	//	ball.setRestrictedMovement(0, 0, scrWdith, scrHeight);
+		
+		ball.setX(scrWdith/2-7);
+		ball.setY(150);
+		ball.setWidth(15);
+		ball.setHeight(15);
+		ball.setRestrictedMovement(0, 0, scrWdith, scrHeight);
+		
 	}
 
 	@Override
@@ -106,12 +115,28 @@ public class BouncingBallGame extends GameState{
 		for (GameObject wall:walls) {
 			wall.draw(g);
 		}
-		//ball.draw(g);
+		stick.draw(g);
+		ball.draw(g);
 	}
 
 	@Override
 	public void update() {
-		ball.update();
+		//odbijanje o palicu
+		if(ball.intersect(stick)){
+			int sgnX = Math.random() > 0.5 ? -1 : 1;
+			updateBallSpeed(1, -1);
+		}
+		
+		stick.update();
+		if(!ball.update()){
+			if(ball.getRestrictedSide() == Ball.LEFT || ball.getRestrictedSide() == Ball.RIGHT){
+				updateBallSpeed(-1, 1);
+			}else{
+				updateBallSpeed(1, -1);
+			}
+			
+			ball.update();
+		}
 	}
 
 	@Override
@@ -134,14 +159,23 @@ public class BouncingBallGame extends GameState{
 
 	@Override
 	public void handleKeyDown(int keyCode) {
-		// TODO Auto-generated method stub
-		
+		if(keyCode == KeyEvent.VK_LEFT){
+			stick.setDiffX(-10);
+		}else if(keyCode == KeyEvent.VK_RIGHT){
+			stick.setDiffX(10);
+		}
 	}
 
 	@Override
 	public void handleKeyUp(int keyCode) {
-		// TODO Auto-generated method stub
 		
+	}
+	
+	private void updateBallSpeed(int sgnX, int sgnY){
+		int speedX = sgnX * ball.getSpeedX();
+		int speedY = sgnY * ball.getSpeedY();
+		ball.setSpeedX(speedX);
+		ball.setSpeedY(speedY);
 	}
 
 }
