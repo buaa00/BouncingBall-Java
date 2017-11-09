@@ -70,5 +70,8 @@ public class BigBlock extends GameObject {
 		health -= x;
 		health = health < 0 ? 0 : health;
 	}
+	public int getValue() {
+		return value;
+	}
 
 }

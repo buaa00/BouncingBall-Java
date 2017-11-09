@@ -10,6 +10,7 @@ import game_objects.BigBlock;
 import game_objects.DrawingType;
 import game_objects.GameObject;
 import game_objects.NormalBlock;
+import game_objects.Player;
 import game_objects.SupriseBlock;
 import game_objects.Wall;
 import game_objects.NormalBlock;
@@ -20,6 +21,7 @@ import rafgfxlib.GameState;
 
 public class BouncingBallGame extends GameState{
 	
+	private Player player;
 	private Ball ball;
 	private Stick stick;
 	private int scrWdith;
@@ -36,7 +38,8 @@ public class BouncingBallGame extends GameState{
 		
 		scrWdith = host.getWidth();
 		scrHeight = host.getHeight();
-		
+		//create Player
+		player=new Player(0, 0, 500, 20, DrawingType.Rect, 3, 0);
 		//create walls left and right
 		Wall leftWall=new Wall(0,0,20,scrHeight,DrawingType.Rect);
 		Wall rightWall=new Wall(scrWdith-20,0,20,scrHeight,DrawingType.Rect);
@@ -109,6 +112,9 @@ public class BouncingBallGame extends GameState{
 		// TODO Auto-generated method stub
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, host.getWidth(), host.getHeight());
+		
+		player.draw(g);
+		
 		for (GameObject block:blocks) {
 			block.draw(g);
 		}
@@ -148,15 +154,23 @@ public class BouncingBallGame extends GameState{
 			if(remove != null){
 				if(remove instanceof NormalBlock){
 					blocks.remove(remove);
+					player.setScore(player.getScore()+1);
+					
 				}else if(remove instanceof BigBlock){
 					BigBlock b = (BigBlock) remove;
 					b.decHealth(1);
 					if(b.getHealth() == 0){
 						blocks.remove(remove);
+						player.setScore(player.getScore()+b.getValue());
 					}
+				}
+				else if (remove instanceof SupriseBlock) {
+					blocks.remove(remove);
+					//HANDLE DROPING SUPRISE OBJECT
 				}
 			}
 		}
+		
 		
 		stick.update();
 		if(!ball.update()){

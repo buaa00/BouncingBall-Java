@@ -9,7 +9,6 @@ public abstract class GameObject {
 	protected int height;
 	protected DrawingType type;
 	
-	
 	//constructors
 	public GameObject(DrawingType type) {
 		this.x = 0;
