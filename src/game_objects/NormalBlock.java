@@ -33,8 +33,10 @@ public class NormalBlock extends GameObject {
 
 	@Override
 	public void draw(Graphics2D g) {
+		Color color = g.getColor();
 		g.setColor(Color.PINK);
 		g.fillRect(this.x, this.y, this.width, this.height);
+		g.setColor(color);
 	}
 
 	@Override

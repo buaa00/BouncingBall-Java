@@ -2,6 +2,7 @@ package game_objects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 /**
  * @author buaa
@@ -10,6 +11,12 @@ import java.awt.Graphics2D;
 public class Ball extends GameObject{
 	private static final Color ballColor = Color.GRAY;
 	
+	public static final int LEFT = 1;
+	public static final int RIGHT = 2;
+	public static final int UP = 3;
+	public static final int DOWN = 4;
+	public static final int NONE = 0;
+	
 	private int speedX;
 	private int speedY;
 	private int maxX = -1;
@@ -17,6 +24,7 @@ public class Ball extends GameObject{
 	private int minX = -1;
 	private int minY = -1;
 	private boolean restrictedMovement = false;
+	private int restrictedSide = NONE;
 	
 	
 	public Ball(DrawingType type) {
@@ -46,13 +54,23 @@ public class Ball extends GameObject{
 		
 		//ako jeste postavljeno ograniceno kretanje i stize se do kraja granica
 		//lopta staje sa kretanjem
-		if(x + width + speedX > maxX  ||
-		   x + speedX < minX		  ||
-		   y + height + speedY > maxY ||
-		   y + speedY < minY){
+		if(x + width + speedX > maxX){
+			restrictedSide = RIGHT;
 			return false;
 		}
-		
+		if(x + speedX < minX){
+			restrictedSide = LEFT;
+			return false;
+		}
+		if(y + height + speedY > maxY){
+			restrictedSide = DOWN;
+			return false;
+		}
+		if(y + speedY < minY){
+			restrictedSide = UP;
+			return false;
+		}
+			
 		//ako lopta nije stigna do kraja granica nastavlja da se krece
 		x += speedX;
 		y += speedY;
@@ -69,6 +87,15 @@ public class Ball extends GameObject{
 
 	@Override
 	public boolean intersect(GameObject o) {
+		if(o.getType() == DrawingType.Rect){
+			Rectangle r1 = new Rectangle(x, y, width, height);
+			Rectangle r2 = new Rectangle(o.getX(),o.getY(),o.getWidth(),o.getHeight());
+			
+			return r1.intersects(r2);
+		}else if(o.getType() == DrawingType.Oval){
+			return false;
+		}
+		
 		return false;
 	}
 
@@ -135,6 +162,10 @@ public class Ball extends GameObject{
 	
 	public boolean isRestrictedMovement() {
 		return restrictedMovement;
+	}
+	
+	public int getRestrictedSide() {
+		return restrictedSide;
 	}
 
 }
