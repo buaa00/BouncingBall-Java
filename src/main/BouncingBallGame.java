@@ -43,7 +43,7 @@ public class BouncingBallGame extends GameState{
 		walls.add(leftWall); walls.add(rightWall);
 		
 		//create ball and stick
-		ball = new Ball(2, 2, DrawingType.Oval);
+		ball = new Ball(3, 3, DrawingType.Oval);
 		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 80, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		//create blocks and random walls
 		Random roller=new Random();
@@ -76,7 +76,7 @@ public class BouncingBallGame extends GameState{
 		ball.setY(150);
 		ball.setWidth(15);
 		ball.setHeight(15);
-		ball.setRestrictedMovement(0, 0, scrWdith, scrHeight);
+		ball.setRestrictedMovement(20, 0, scrWdith-20, scrHeight);
 		
 	}
 
@@ -125,6 +125,37 @@ public class BouncingBallGame extends GameState{
 		if(ball.intersect(stick)){
 			int sgnX = Math.random() > 0.5 ? -1 : 1;
 			updateBallSpeed(1, -1);
+		}
+		
+		boolean wallCollision = false;
+		
+		for(GameObject o:walls){
+			if(ball.intersect(o)){
+				updateBallSpeed(1, -1);
+				wallCollision = true;
+			}
+		}
+		
+		if(!wallCollision){
+			GameObject remove = null;
+			for(GameObject o:blocks){
+				if(ball.intersect(o)){
+					remove = o;
+					updateBallSpeed(1, -1);
+				}
+			}
+			
+			if(remove != null){
+				if(remove instanceof NormalBlock){
+					blocks.remove(remove);
+				}else if(remove instanceof BigBlock){
+					BigBlock b = (BigBlock) remove;
+					b.decHealth(1);
+					if(b.getHealth() == 0){
+						blocks.remove(remove);
+					}
+				}
+			}
 		}
 		
 		stick.update();

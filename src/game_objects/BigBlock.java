@@ -47,7 +47,7 @@ public class BigBlock extends GameObject {
 		Font f=new Font("Dialog", Font.BOLD, 16);
 		g.setFont(f);
 		FontMetrics fm=g.getFontMetrics();
-		String s=""+this.value;
+		String s=""+this.health;
 		int size=0;
 		int h=fm.getHeight();
 		for (int i=0;i<s.length();i++) {
@@ -62,5 +62,13 @@ public class BigBlock extends GameObject {
 		return false;
 	}
 	
+	public int getHealth() {
+		return health;
+	}
+	
+	public void decHealth(int x){
+		health -= x;
+		health = health < 0 ? 0 : health;
+	}
 
 }

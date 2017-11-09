@@ -3,6 +3,7 @@ package game_objects;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.lang.ref.ReferenceQueue;
 
 /**
  * @author buaa
