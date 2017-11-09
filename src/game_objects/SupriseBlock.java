@@ -40,6 +40,7 @@ public class SupriseBlock extends GameObject {
 	}
 	@Override
 	public void draw(Graphics2D g) {
+		Color c=g.getColor();
 		g.setColor(Color.GREEN);
 		g.fillRect(this.x, this.y, this.width, this.height);
 		g.setColor(Color.WHITE);
@@ -49,12 +50,18 @@ public class SupriseBlock extends GameObject {
 		int size=fm.charWidth('?');
 		int h=fm.getHeight();
 		g.drawString("?", x+(width-size)/2, y+h-height/4);
+		g.setColor(c);
 		
 	}
 	@Override
 	public boolean intersect(GameObject o) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	
+	
+	public void fire() {
+		
 	}
 	
 	

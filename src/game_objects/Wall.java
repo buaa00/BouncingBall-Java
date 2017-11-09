@@ -24,8 +24,10 @@ public class Wall extends GameObject {
 	}
 	@Override
 	public void draw(Graphics2D g) {
+		Color c=g.getColor();
 		g.setColor(Color.ORANGE);
 		g.fillRect(this.x, this.y, this.width, this.height);
+		g.setColor(c);
 	}
 	@Override
 	public boolean intersect(GameObject o) {

@@ -40,6 +40,7 @@ public class BigBlock extends GameObject {
 	}
 	@Override
 	public void draw(Graphics2D g) {
+		Color c=g.getColor();
 		g.setColor(Color.BLUE);
 		g.fillRect(this.x, this.y, this.width, this.height);
 		g.setColor(Color.WHITE);
@@ -53,7 +54,7 @@ public class BigBlock extends GameObject {
 			size+= fm.charWidth(s.charAt(i));
 		}
 		g.drawString(s, x+(width-size)/2, y+h-height/4);
-		
+		g.setColor(c);
 	}
 	@Override
 	public boolean intersect(GameObject o) {
