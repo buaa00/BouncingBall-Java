@@ -8,9 +8,13 @@ import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
 
 public class BouncingBallGame extends GameState{
+	
+	private final int wallWidth = 15;
+	
 
 	public BouncingBallGame(GameHost host) {
 		super(host);
+		
 	}
 
 	@Override
@@ -46,7 +50,6 @@ public class BouncingBallGame extends GameState{
 
 	@Override
 	public void update() {
-		// TODO Auto-generated method stub
 		
 	}
 
