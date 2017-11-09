@@ -9,9 +9,6 @@ import rafgfxlib.GameState;
 
 public class BouncingBallGame extends GameState{
 	
-	private final int wallWidth = 15;
-	
-
 	public BouncingBallGame(GameHost host) {
 		super(host);
 		
