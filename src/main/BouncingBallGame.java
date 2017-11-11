@@ -5,15 +5,17 @@ import java.awt.Graphics2D;
 import java.util.ArrayList;
 import java.util.Random;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
+
 import game_objects.Ball;
 import game_objects.BigBlock;
 import game_objects.DrawingType;
+import game_objects.Fire;
 import game_objects.GameObject;
 import game_objects.NormalBlock;
 import game_objects.Player;
 import game_objects.SupriseBlock;
 import game_objects.Wall;
-import game_objects.NormalBlock;
 import game_objects.Stick;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
@@ -24,6 +26,7 @@ public class BouncingBallGame extends GameState{
 	private Player player;
 	private Ball ball;
 	private Stick stick;
+	private ArrayList<Fire> fire;
 	private int scrWdith;
 	private int scrHeight;
 	private ArrayList<GameObject> blocks;
@@ -47,7 +50,7 @@ public class BouncingBallGame extends GameState{
 		
 		//create ball and stick
 		ball = new Ball(3, 3, DrawingType.Oval);
-		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 80, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
+		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 100, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		//create blocks and random walls
 		Random roller=new Random();
 		int fixWidth=50; int fixHeight=20;
@@ -80,6 +83,23 @@ public class BouncingBallGame extends GameState{
 		ball.setWidth(15);
 		ball.setHeight(15);
 		ball.setRestrictedMovement(20, 0, scrWdith-20, scrHeight);
+		
+		//instancing fire
+		fire = new ArrayList<>();
+		
+		Fire fireSprite = new Fire(0, 0, DrawingType.Rect);
+		
+		int fireY = scrHeight-fireSprite.getHeight();
+		fireSprite.setY(fireY);
+
+		int offsetX = 50;
+		while(offsetX <= scrWdith - 50){
+			fire.add(fireSprite);
+			fireSprite = new Fire(20, fireY, DrawingType.Rect);
+			fireSprite.setOffset(offsetX, 0);
+			offsetX += 50;
+		}
+		
 		
 	}
 
@@ -115,29 +135,54 @@ public class BouncingBallGame extends GameState{
 		
 		player.draw(g);
 		
+		stick.draw(g);
+		
 		for (GameObject block:blocks) {
 			block.draw(g);
 		}
 		for (GameObject wall:walls) {
 			wall.draw(g);
 		}
-		stick.draw(g);
+		
 		ball.draw(g);
+		
+		for(Fire f : fire){
+			f.draw(g);
+		}
+		
 	}
 
 	@Override
 	public void update() {
+		for(Fire f:fire){
+			f.update();
+		}
+		
+		stick.update();
+		if(!ball.update()){
+			if(ball.getRestrictedSide() == Ball.LEFT || ball.getRestrictedSide() == Ball.RIGHT){
+				updateBallSpeed(-1, 1);
+			}else if(ball.getRestrictedSide() == Ball.UP){
+				updateBallSpeed(1, -1);
+			}else{
+				player.die();
+				resetGame();
+				return;
+			}
+			
+			ball.update();
+		}
+		
 		//odbijanje o palicu
 		if(ball.intersect(stick)){
-			int sgnX = Math.random() > 0.5 ? -1 : 1;
-			updateBallSpeed(1, -1);
+			changeBallDirection();
 		}
 		
 		boolean wallCollision = false;
 		
 		for(GameObject o:walls){
 			if(ball.intersect(o)){
-				updateBallSpeed(1, -1);
+				changeBallDirection();
 				wallCollision = true;
 			}
 		}
@@ -147,7 +192,8 @@ public class BouncingBallGame extends GameState{
 			for(GameObject o:blocks){
 				if(ball.intersect(o)){
 					remove = o;
-					updateBallSpeed(1, -1);
+					changeBallDirection();
+					break;
 				}
 			}
 			
@@ -171,22 +217,10 @@ public class BouncingBallGame extends GameState{
 			}
 		}
 		
-		
-		stick.update();
-		if(!ball.update()){
-			if(ball.getRestrictedSide() == Ball.LEFT || ball.getRestrictedSide() == Ball.RIGHT){
-				updateBallSpeed(-1, 1);
-			}else{
-				updateBallSpeed(1, -1);
-			}
-			
-			ball.update();
-		}
 	}
 
 	@Override
 	public void handleMouseDown(int x, int y, GFMouseButton button) {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -222,5 +256,32 @@ public class BouncingBallGame extends GameState{
 		ball.setSpeedX(speedX);
 		ball.setSpeedY(speedY);
 	}
+	
+	private void changeBallDirection(){
+		if(ball.getIntersectionSide() == ball.UP){
+			System.out.println("gore");
+			if(ball.getSpeedY()>0){
+				updateBallSpeed(1, -1);
+			}
+		}else if(ball.getIntersectionSide() == ball.RIGHT){
+			System.out.println("desno");
+			if(ball.getSpeedX()<0){
+				updateBallSpeed(-1, 1);
+			}
+		}else if(ball.getIntersectionSide() == ball.DOWN){
+			System.out.println("dole");
+			if(ball.getSpeedY() < 0){
+				updateBallSpeed(1, -1);
+			}
+		}else if(ball.getIntersectionSide() == ball.LEFT){
+			System.out.println("levo");
+			if(ball.getSpeedX() > 0){
+				updateBallSpeed(-1, 1);
+			}
+		}
+	}
 
+	public void resetGame(){
+		
+	}
 }

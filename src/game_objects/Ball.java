@@ -2,8 +2,12 @@ package game_objects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.ref.ReferenceQueue;
+
+import com.sun.corba.se.impl.oa.toa.TOA;
+
 
 /**
  * @author buaa
@@ -26,6 +30,7 @@ public class Ball extends GameObject{
 	private int minY = -1;
 	private boolean restrictedMovement = false;
 	private int restrictedSide = NONE;
+	private int intersectionSide = NONE;
 	
 	
 	public Ball(DrawingType type) {
@@ -91,8 +96,23 @@ public class Ball extends GameObject{
 		if(o.getType() == DrawingType.Rect){
 			Rectangle r1 = new Rectangle(x, y, width, height);
 			Rectangle r2 = new Rectangle(o.getX(),o.getY(),o.getWidth(),o.getHeight());
+			Rectangle r = r1.intersection(r2);
 			
+			intersectionSide = NONE;
+			if(r1.intersects(r2)){
+				if(y<o.getY() && y+height >= o.getY()){
+					intersectionSide = UP;
+				}else if(x<o.getX() && x+width >= o.getX()){
+					intersectionSide = LEFT;
+				}else if(x<=o.getX()+o.getWidth() && x+width>o.getX()+o.getWidth()){
+					intersectionSide = RIGHT;
+				}else if(y<=o.getY()+o.getHeight() && y+height>o.getY()+o.getHeight()){
+					intersectionSide = DOWN;
+				}
+			}
 			return r1.intersects(r2);
+			
+			
 		}else if(o.getType() == DrawingType.Oval){
 			return false;
 		}
@@ -169,4 +189,23 @@ public class Ball extends GameObject{
 		return restrictedSide;
 	}
 
+	private static boolean lineCircleIntersection(Point p1, Point p2, Point c, double r){
+		Point t = new Point((p1.x+p2.x)/2, (p2.y+p1.y)/2);
+		double dist = t.distance(c);
+		return dist<=r;
+		
+//		double k = ((double)p2.y - p1.y)/((double)p2.x-p1.x);
+//		double n = -(k*p1.x + p1.y);
+//		System.out.println(r*r*(k*k+1) - (k*c.x - c.y + n)*(k*c.x - c.y + n));
+//		return r*r*(k*k+1) - (k*c.x - c.y + n)*(k*c.x - c.y + n) >= 0;
+	}
+	
+	public double getRadius(){
+		double r = Math.sqrt(width*width + height*height)/2;
+		return r;
+	}
+	
+	public int getIntersectionSide() {
+		return intersectionSide;
+	}
 }
