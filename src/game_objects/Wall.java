@@ -25,8 +25,25 @@ public class Wall extends GameObject {
 	@Override
 	public void draw(Graphics2D g) {
 		Color c=g.getColor();
-		g.setColor(Color.ORANGE);
+		g.setColor(new Color(81,19,1));
 		g.fillRect(this.x, this.y, this.width, this.height);
+		
+		g.setColor(new Color(191,57,11));
+		
+		int offset = 2;
+		
+		
+		//dole
+		g.fillRect(x, y+height-offset, width-offset, offset);
+		if(x+width == 640){
+			//levo
+			g.fillRect(x, y+offset, offset, height-2*offset);
+		}else{
+			//desno
+			g.fillRect(x+width-offset, y, offset, height-offset);
+		}
+		
+		
 		g.setColor(c);
 	}
 	@Override

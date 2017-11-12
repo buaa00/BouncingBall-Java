@@ -1,5 +1,6 @@
 package game_objects;
 
+import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.util.Random;
@@ -16,6 +17,25 @@ public class Fire extends GameObject{
 	private int offsetY = 0;
 	private int frameX;
 	private int frameY;
+	
+	
+	// Jedna cesta operacija u radu sa grafikom je ogranicavanje vrijednosti
+	// na opseg, sto se naziva "clamp", pa cemo napraviti jednostavnu
+	// implementaciju te funkcije.
+	public static int clamp(int value, int min, int max)
+	{
+		if(value < min) return min;
+		if(value > max) return max;
+		return value;
+	}
+	
+	// Zavisno od konteksta, opseg od 0 do 255 ili od 0 do 1 su najcesci,
+	// stoga je korisno imati i funkciju samo za taj opseg, da dodatno
+	// skrati kod koji pisemo kasnije.
+	public static int saturate(int value)
+	{
+		return clamp(value, 0, 255);
+	}
 	
 	public Fire(int x, int y,DrawingType type) {
 		super(x,y,type);
@@ -65,4 +85,11 @@ public class Fire extends GameObject{
 	public int getOffsetY() {
 		return offsetY;
 	}
+	
+	public BufferedImage getSpriteSheet() {
+		return spriteSheet;
+	}
+	
+	
+	
 }

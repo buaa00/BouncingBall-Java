@@ -14,7 +14,7 @@ import com.sun.corba.se.impl.oa.toa.TOA;
  *
  */
 public class Ball extends GameObject{
-	private static final Color ballColor = Color.GRAY;
+	private static final Color ballColor = Color.RED;
 	
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
@@ -86,6 +86,31 @@ public class Ball extends GameObject{
 	@Override
 	public void draw(Graphics2D g) {
 		Color oldColor = g.getColor();
+		int offsetW = width/6;
+		int offsetH = height/6;
+		
+		int offsetX = 3*speedX/5;
+		int offsetY = 3*speedY/5;
+		
+		Color c = new Color(255, 255, 255);
+		int offsetR = (255-ballColor.getRed())/5;
+		int offsetG = (255-ballColor.getGreen())/5;
+		int offsetB = (255-ballColor.getBlue())/5;
+		
+		
+		for(int i=1;i<6;i++){
+			g.setColor(c);
+			
+			if(speedX > 0 && speedY > 0){
+				g.fillOval(x-(6-i)*offsetX, y-(6-i)*offsetY, offsetW*i, offsetH*i);
+			}else if(speedX < 0 && speedY > 0){
+				g.fillOval(x + width - offsetW*i - (6-i)*offsetX, y-(6-i)*offsetY, offsetW*i, offsetH*i);
+			}
+			
+			
+			c = new Color(255 - i*offsetR, 255 - i*offsetG, 255 - i*offsetB);
+		}
+		
 		g.setColor(ballColor);
 		g.fillOval(x, y, width, height);
 		g.setColor(oldColor);
@@ -100,15 +125,23 @@ public class Ball extends GameObject{
 			
 			intersectionSide = NONE;
 			if(r1.intersects(r2)){
+				if(x<o.getX() && x+width >= o.getX()){
+					intersectionSide = LEFT;
+				}
+				
+				if(x<=o.getX()+o.getWidth() && x+width>o.getX()+o.getWidth()){
+					intersectionSide = RIGHT;
+				}
+				
 				if(y<o.getY() && y+height >= o.getY()){
 					intersectionSide = UP;
-				}else if(x<o.getX() && x+width >= o.getX()){
-					intersectionSide = LEFT;
-				}else if(x<=o.getX()+o.getWidth() && x+width>o.getX()+o.getWidth()){
-					intersectionSide = RIGHT;
-				}else if(y<=o.getY()+o.getHeight() && y+height>o.getY()+o.getHeight()){
+				}
+				
+				if(y<=o.getY()+o.getHeight() && y+height>o.getY()+o.getHeight()){
 					intersectionSide = DOWN;
 				}
+				
+//				System.out.println(left + " " + up + " " + right + " " + down);
 			}
 			return r1.intersects(r2);
 			
