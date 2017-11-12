@@ -19,6 +19,8 @@ public class Main {
 		BouncingBallGameTransition.getInstance(bbHost);
 		new BouncingBallGame(bbHost);
 		new BouncingBallGameBlurState(bbHost);
+		new BouncingBallFinishedState(bbHost);
+		
 		bbHost.setState("GameState");
 	}
 

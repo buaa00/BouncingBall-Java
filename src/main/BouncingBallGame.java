@@ -355,6 +355,8 @@ public class BouncingBallGame extends GameState{
 			((BouncingBallGameBlurState)host.getState("Blur")).setImage(snapshot);  //setovanje blurovanog
 			System.out.println("IDEM U BLUR");
 			BouncingBallGameTransition.transitionTo("Blur", TransitionType.ZoomIn,0.01f);
+			//BouncingBallGameTransition.transitionTo("Finished", TransitionType.ZoomIn,0.01f);
+
 		}
 	}
 	
