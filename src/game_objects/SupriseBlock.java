@@ -11,29 +11,29 @@ public class SupriseBlock extends GameObject {
 	
 	//fields
 	private int health;
-	private GameObject suprise;  //object in block
+	private GameObject surprise;  //object in block
 	
-	//constructors from GameObject with healts and suprise
+	//constructors from GameObject with healts and surprise
 	public SupriseBlock(DrawingType type) {
 		super(type);
 		this.health=1;
-		this.suprise=null;
+		this.surprise=null;
 	}	
 	public SupriseBlock(int x, int y, DrawingType type){
 		super(x,y,type); 
 		this.health=1;	
-		this.suprise=null;
+		this.surprise=null;
 	}
 	public SupriseBlock(int x, int y, int width, int height, DrawingType type){
 		super(x,y,width,height,type);
 		this.health=1;
-		this.suprise=null;
+		this.surprise=null;
 	}
-	//constructor for initializing suprise
+	//constructor for initializing surprise
 	public SupriseBlock(int x, int y, int width, int height, DrawingType type, GameObject suprise){
 		super(x,y,width,height,type);
 		this.health=1;
-		this.suprise=suprise;
+		this.surprise=suprise;
 	}
 	@Override
 	public boolean update() {
@@ -76,8 +76,8 @@ public class SupriseBlock extends GameObject {
 	}
 	
 	
-	public void fire() {
-		
+	public GameObject fire() {
+		return surprise;
 	}
 	
 	

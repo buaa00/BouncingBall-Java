@@ -1,6 +1,8 @@
 package main;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -171,5 +173,6 @@ public class BouncingBallGameBlurState extends GameState {
 		this.imageclear = imageclear;
 		this.rasterclear= this.imageclear.getRaster();
 	}
+	
 
 }
