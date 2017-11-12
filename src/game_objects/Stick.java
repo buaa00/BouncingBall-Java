@@ -21,7 +21,6 @@ public class Stick extends GameObject{
 		if(x + diffX > minX && x + width + diffX < maxX){
 			x += diffX;
 		}
-		
 		diffX = 0;
 		return false;
 	}

@@ -1,10 +1,24 @@
 package main;
 
+import java.awt.AWTException;
+import java.awt.Canvas;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Random;
+
+import javax.imageio.ImageIO;
+import javax.swing.JLayeredPane;
+import javax.swing.JPanel;
+import javax.swing.JRootPane;
+
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.awt.image.WritableRaster;
+import java.io.File;
+import java.io.IOException;
+
 import game_objects.Ball;
 import game_objects.BigBlock;
 import game_objects.DrawingType;
@@ -13,11 +27,15 @@ import game_objects.NormalBlock;
 import game_objects.Player;
 import game_objects.SupriseBlock;
 import game_objects.Wall;
+import main.BouncingBallGameTransition.TransitionType;
 import game_objects.NormalBlock;
 import game_objects.Stick;
 import rafgfxlib.GameHost;
 import rafgfxlib.GameHost.GFMouseButton;
 import rafgfxlib.GameState;
+import rafgfxlib.Util;
+
+import java.awt.Robot;
 
 public class BouncingBallGame extends GameState{
 	
@@ -30,14 +48,17 @@ public class BouncingBallGame extends GameState{
 	private ArrayList<GameObject> walls;
 	private final int stickWidth = 100;
 	private final int stickHeight = 15;
+	private BufferedImage snapshot;
+    private Robot robot ;
 	
 	public BouncingBallGame(GameHost host) {
 		super(host);
+		host.setUpdateRate(60);
 		blocks=new ArrayList<>();
 		walls=new ArrayList<>();
-		
 		scrWdith = host.getWidth();
 		scrHeight = host.getHeight();
+		snapshot=new BufferedImage(scrWdith, scrHeight, BufferedImage.TYPE_3BYTE_BGR);
 		//create Player
 		player=new Player(0, 0, 500, 20, DrawingType.Rect, 3, 0);
 		//create walls left and right
@@ -48,32 +69,9 @@ public class BouncingBallGame extends GameState{
 		//create ball and stick
 		ball = new Ball(3, 3, DrawingType.Oval);
 		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 80, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
-		//create blocks and random walls
-		Random roller=new Random();
-		int fixWidth=50; int fixHeight=20;
-		for (int i=1;i<=5;i++) {
-			for (int j=1;j<=11;j++) {
-				int num=roller.nextInt(100)+1;
-				int x=(j-1)*fixWidth+j+39;
-				int y=(i-1)*fixHeight+i+20;
-				if (num<=5) { 
-					Wall middleWall=new Wall(x, y, fixWidth, fixHeight, DrawingType.Rect);
-					walls.add(middleWall);
-				}
-				if (num>5 && num<=10) {
-					SupriseBlock supriseBlock= new SupriseBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
-					blocks.add(supriseBlock);
-				}
-				if (num>10 && num<=95) {
-					NormalBlock block= new NormalBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
-					blocks.add(block);
-				}
-				if (num>95) {
-					BigBlock bigBlock= new BigBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
-					blocks.add(bigBlock);
-				}
-			}
-		}
+		
+		
+		createLevel();
 		
 		ball.setX(scrWdith/2-7);
 		ball.setY(150);
@@ -155,6 +153,7 @@ public class BouncingBallGame extends GameState{
 				if(remove instanceof NormalBlock){
 					blocks.remove(remove);
 					player.setScore(player.getScore()+1);
+					this.checkEnd();
 					
 				}else if(remove instanceof BigBlock){
 					BigBlock b = (BigBlock) remove;
@@ -162,10 +161,12 @@ public class BouncingBallGame extends GameState{
 					if(b.getHealth() == 0){
 						blocks.remove(remove);
 						player.setScore(player.getScore()+b.getValue());
+						this.checkEnd();
 					}
 				}
 				else if (remove instanceof SupriseBlock) {
 					blocks.remove(remove);
+					this.checkEnd();
 					//HANDLE DROPING SUPRISE OBJECT
 				}
 			}
@@ -222,5 +223,120 @@ public class BouncingBallGame extends GameState{
 		ball.setSpeedX(speedX);
 		ball.setSpeedY(speedY);
 	}
-
+	
+	
+	private void checkEnd() {
+		if (checkBlocks(blocks)) {
+			ball.setSpeedX(0);
+			ball.setSpeedY(0);
+			
+			JRootPane pane = (JRootPane)this.host.getWindow().getComponent(0);
+			JPanel panel = (JPanel)pane.getComponent(0);
+			JLayeredPane laypane = (JLayeredPane)pane.getComponent(1);
+			JPanel pan = (JPanel)laypane.getComponent(0);
+			Canvas cvs = (Canvas)pan.getComponent(0);
+			Graphics2D g=(Graphics2D) cvs.getGraphics();
+			this.render(g, scrWdith, scrHeight);
+			
+			ball.draw((Graphics2D)snapshot.getGraphics());
+			stick.draw((Graphics2D)snapshot.getGraphics());
+			player.draw((Graphics2D)snapshot.getGraphics());
+			for (GameObject block:blocks) {
+				block.draw((Graphics2D)snapshot.getGraphics());
+			}
+			for (GameObject wall:walls) {
+				wall.draw((Graphics2D)snapshot.getGraphics());
+			}
+			this.renderSnapshot(snapshot);
+			
+			((BouncingBallGameBlurState)host.getState("Blur")).setImageclear(snapshot); //setovanje cistog  
+			snapshot=blur(snapshot);
+			System.out.println("KURAC");
+			((BouncingBallGameBlurState)host.getState("Blur")).setImage(snapshot);  //setovanje blurovanog
+			BouncingBallGameTransition.transitionTo("Blur", TransitionType.ZoomIn,0.01f);
+		}
+	}
+	
+	
+	private BufferedImage blur(BufferedImage image) {
+		WritableRaster source = image.getRaster();
+		WritableRaster target = Util.createRaster(source.getWidth(), source.getHeight(), false);
+		int rgb[] = new int[3];
+		int accum[] = new int[3];
+		int sampleCount = 100;
+		int centerX = source.getWidth() / 2;
+		int centerY = source.getHeight() / 2;
+		float strength = 0.05f;
+		for(int y = 0; y < source.getHeight(); y++)
+		{
+			for(int x = 0; x < source.getWidth(); x++)
+			{
+				accum[0] = 0; accum[1] = 0; accum[2] = 0;
+				
+				for(int i = 0; i < sampleCount; i++)
+				{
+					float magnitude = 1.0f + ((float)Math.random() - 0.5f) * strength;
+					float srcX = centerX + (x - centerX) * magnitude;
+					float srcY = centerY + (y - centerY) * magnitude;
+					Util.bilSample(source, srcX, srcY, rgb);
+					accum[0] += rgb[0];
+					accum[1] += rgb[1];
+					accum[2] += rgb[2];
+				}
+				accum[0] /= sampleCount;
+				accum[1] /= sampleCount;
+				accum[2] /= sampleCount;
+				target.setPixel(x, y, accum);
+			}
+		}
+		return Util.rasterToImage(target);
+	}
+	
+	private boolean checkBlocks(ArrayList<GameObject> blocks) {
+		int num=0;
+		for (GameObject block:blocks) {
+			if (block instanceof NormalBlock) num++;
+		}
+		if (num==0) return true;
+		return false;
+	}
+	
+	
+	public void createLevel() {
+		//create blocks and random walls
+		Random roller=new Random();
+		int fixWidth=50; int fixHeight=20;
+		for (int i=1;i<=5;i++) {
+			for (int j=1;j<=11;j++) {
+				int num=roller.nextInt(100)+1;
+				int x=(j-1)*fixWidth+j+39;
+				int y=(i-1)*fixHeight+i+20;
+				if (num<=5) { 
+					Wall middleWall=new Wall(x, y, fixWidth, fixHeight, DrawingType.Rect);
+					walls.add(middleWall);
+				}
+				if (num>5 && num<=10) {
+					SupriseBlock supriseBlock= new SupriseBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
+					blocks.add(supriseBlock);
+				}
+				if (num>10 && num<=95) {
+					NormalBlock block= new NormalBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
+					blocks.add(block);
+				}
+				if (num>95) {
+					BigBlock bigBlock= new BigBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
+					blocks.add(bigBlock);
+				}
+			}
+		}
+	}
+	
+	
+	public Ball getBall() {
+		return ball;
+	}
+	public Stick getStick() {
+		return stick;
+	}
+	
 }
