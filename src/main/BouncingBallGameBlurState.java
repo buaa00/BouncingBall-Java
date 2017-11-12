@@ -7,11 +7,18 @@ import java.awt.image.ImageObserver;
 import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+
 import rafgfxlib.Util;
 import javax.imageio.ImageIO;
 
+import com.sun.xml.internal.bind.v2.runtime.unmarshaller.XsiNilLoader.Array;
+
 import game_objects.Ball;
+import game_objects.DrawingType;
+import game_objects.GameObject;
 import game_objects.Stick;
+import game_objects.Wall;
 import javafx.beans.value.WritableBooleanValue;
 import main.BouncingBallGameTransition.TransitionType;
 import rafgfxlib.GameHost;
@@ -96,12 +103,22 @@ public class BouncingBallGameBlurState extends GameState {
 	@Override
 	public void update() {
 		if (radius>640) {
+			BouncingBallGame bg = ((BouncingBallGame)host.getState("GameState"));
+			ArrayList<GameObject> list=bg.getBlocks();
+			bg.getBlocks().clear();
+			ArrayList<GameObject> list1=bg.getWalls();
+			bg.getWalls().clear();
+			
+			Wall leftWall=new Wall(0,0,20,480,DrawingType.Rect);
+			Wall rightWall=new Wall(640-20,0,20,480,DrawingType.Rect);
+			bg.getWalls().add(leftWall);
+			bg.getWalls().add(rightWall);
+			
 			((BouncingBallGame)host.getState("GameState")).createLevel();
 			Stick s=((BouncingBallGame)host.getState("GameState")).getStick();
-			
+			System.out.println("VRACAM SE U GAME");
 			((BouncingBallGame)host.getState("GameState")).getStick().setY(s.getY()-50);
 			
-			BouncingBallGame bg = ((BouncingBallGame)host.getState("GameState"));
 			
 			Ball ball = bg.getBall();
 			ball.setX(bg.getBallStartX());

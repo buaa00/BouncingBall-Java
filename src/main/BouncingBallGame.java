@@ -50,7 +50,8 @@ public class BouncingBallGame extends GameState{
 	private ArrayList<GameObject> walls;
 	private final int stickWidth = 100;
 	private final int stickHeight = 15;
-	private BufferedImage snapshot;
+	private BufferedImage snapshot=new BufferedImage(640, 480, BufferedImage.TYPE_3BYTE_BGR);
+
     private Robot robot ;
 	private final int stickSpeed = 15;
 	private int ballStartX;
@@ -59,6 +60,7 @@ public class BouncingBallGame extends GameState{
 	private int ballHeight = 20;
 	private int ballSpeedX = 4;
 	private int ballSpeedY = 4;
+	
 	
 	private StarTrek starTrek;
 	
@@ -222,7 +224,6 @@ public class BouncingBallGame extends GameState{
 				if(remove instanceof NormalBlock){
 					blocks.remove(remove);
 					player.setScore(player.getScore()+1);
-					this.checkEnd();
 					
 				}else if(remove instanceof BigBlock){
 					BigBlock b = (BigBlock) remove;
@@ -230,12 +231,10 @@ public class BouncingBallGame extends GameState{
 					if(b.getHealth() == 0){
 						blocks.remove(remove);
 						player.setScore(player.getScore()+b.getValue());
-						this.checkEnd();
 					}
 				}
 				else if (remove instanceof SupriseBlock) {
 					blocks.remove(remove);
-					this.checkEnd();
 					//HANDLE DROPING SUPRISE OBJECT
 				}
 			}
@@ -258,7 +257,7 @@ public class BouncingBallGame extends GameState{
 			ball.update();
 		}
 		
-		
+		this.checkEnd();
 		starTrek.update();
 	}
 
@@ -332,12 +331,29 @@ public class BouncingBallGame extends GameState{
 			for (GameObject wall:walls) {
 				wall.draw((Graphics2D)snapshot.getGraphics());
 			}
+			
 			this.renderSnapshot(snapshot);
+			
+			File outputfile = new File("cistak.jpg");
+			try {
+				ImageIO.write(snapshot, "jpg", outputfile);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			
 			((BouncingBallGameBlurState)host.getState("Blur")).setImageclear(snapshot); //setovanje cistog  
 			snapshot=blur(snapshot);
-			System.out.println("KURAC");
+			File outputfile1 = new File("blurko.jpg");
+			
+			try {
+				ImageIO.write(snapshot, "jpg", outputfile1);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			((BouncingBallGameBlurState)host.getState("Blur")).setImage(snapshot);  //setovanje blurovanog
+			System.out.println("IDEM U BLUR");
 			BouncingBallGameTransition.transitionTo("Blur", TransitionType.ZoomIn,0.01f);
 		}
 	}
@@ -347,31 +363,27 @@ public class BouncingBallGame extends GameState{
 		WritableRaster source = image.getRaster();
 		WritableRaster target = Util.createRaster(source.getWidth(), source.getHeight(), false);
 		int rgb[] = new int[3];
-		int accum[] = new int[3];
-		int sampleCount = 100;
+		int pom[] = new int[3];
+		int count = 100;
 		int centerX = source.getWidth() / 2;
 		int centerY = source.getHeight() / 2;
-		float strength = 0.05f;
-		for(int y = 0; y < source.getHeight(); y++)
-		{
-			for(int x = 0; x < source.getWidth(); x++)
-			{
-				accum[0] = 0; accum[1] = 0; accum[2] = 0;
-				
-				for(int i = 0; i < sampleCount; i++)
-				{
+		float strength = 0.07f;
+		for(int y = 0; y < source.getHeight(); y++) {
+			for(int x = 0; x < source.getWidth(); x++) {
+				pom[0] = 0; pom[1] = 0; pom[2] = 0;
+				for(int i = 0; i < count; i++){
 					float magnitude = 1.0f + ((float)Math.random() - 0.5f) * strength;
 					float srcX = centerX + (x - centerX) * magnitude;
 					float srcY = centerY + (y - centerY) * magnitude;
 					Util.bilSample(source, srcX, srcY, rgb);
-					accum[0] += rgb[0];
-					accum[1] += rgb[1];
-					accum[2] += rgb[2];
+					pom[0] += rgb[0];
+					pom[1] += rgb[1];
+					pom[2] += rgb[2];
 				}
-				accum[0] /= sampleCount;
-				accum[1] /= sampleCount;
-				accum[2] /= sampleCount;
-				target.setPixel(x, y, accum);
+				pom[0] /= count;
+				pom[1] /= count;
+				pom[2] /= count;
+				target.setPixel(x, y, pom);
 			}
 		}
 		return Util.rasterToImage(target);
@@ -382,8 +394,12 @@ public class BouncingBallGame extends GameState{
 		for (GameObject block:blocks) {
 			if (block instanceof NormalBlock) num++;
 		}
-		if (num==0) return true;
-		return false;
+
+		for (GameObject block:blocks) {
+			if (block instanceof NormalBlock) return false;
+		}
+		System.out.println("NEMA VISE");
+		return true;
 	}
 	
 	
@@ -470,5 +486,11 @@ public class BouncingBallGame extends GameState{
 	
 	public int getBallStartY() {
 		return ballStartY;
+	}
+	public ArrayList<GameObject> getBlocks() {
+		return blocks;
+	}
+	public ArrayList<GameObject> getWalls() {
+		return walls;
 	}
 }
