@@ -98,8 +98,19 @@ public class BouncingBallGameBlurState extends GameState {
 		if (radius>640) {
 			((BouncingBallGame)host.getState("GameState")).createLevel();
 			Stick s=((BouncingBallGame)host.getState("GameState")).getStick();
+			
 			((BouncingBallGame)host.getState("GameState")).getStick().setY(s.getY()-50);
+			
+			BouncingBallGame bg = ((BouncingBallGame)host.getState("GameState"));
+			
+			Ball ball = bg.getBall();
+			ball.setX(bg.getBallStartX());
+			ball.setY(bg.getBallStartY());
+			
+			bg.pauseGame();
+			
 			BouncingBallGameTransition.transitionTo("GameState", TransitionType.Crossfade,10f);
+			
 		}
 		
 	}

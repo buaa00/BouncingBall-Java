@@ -40,13 +40,6 @@ import rafgfxlib.Util;
 import java.awt.Robot;
 
 public class BouncingBallGame extends GameState{
-	public static class Star
-	{
-		public float posX;
-		public float posY;
-		public float posZ;
-	}
-	
 	private Player player;
 	private Ball ball;
 	private Stick stick;
@@ -256,9 +249,10 @@ public class BouncingBallGame extends GameState{
 			}else if(ball.getRestrictedSide() == Ball.UP){
 				updateBallSpeed(1, -1);
 			}else{
-				player.die();
-				gameOver();
-				return;
+//				player.die();
+//				gameOver();
+				updateBallSpeed(1, -1);
+//				return;
 			}
 			
 			ball.update();
@@ -468,5 +462,13 @@ public class BouncingBallGame extends GameState{
 		ball.setSpeedX(0);
 		ball.setSpeedY(0);
 		gameStarted = false;
+	}
+	
+	public int getBallStartX() {
+		return ballStartX;
+	}
+	
+	public int getBallStartY() {
+		return ballStartY;
 	}
 }

@@ -3,9 +3,15 @@ package game_objects;
 import java.awt.Color;
 import java.awt.Graphics2D;
 
-import main.BouncingBallGame.Star;
 
 public class StarTrek {
+	public static class Star
+	{
+		public float posX;
+		public float posY;
+		public float posZ;
+	}
+	
 	private static final int STAR_MAX = 1000;
 
 	private Star[] stars = new Star[STAR_MAX];
