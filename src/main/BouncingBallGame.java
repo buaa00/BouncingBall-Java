@@ -57,9 +57,13 @@ public class BouncingBallGame extends GameState{
 	
 	private StarTrek starTrek;
 	
+	private boolean gameStarted;
+	
 	
 	public BouncingBallGame(GameHost host) {
 		super(host);
+		
+		gameStarted = false;
 		
 		blocks=new ArrayList<>();
 		walls=new ArrayList<>();
@@ -75,7 +79,7 @@ public class BouncingBallGame extends GameState{
 		walls.add(rightWall);
 		
 		//create ball and stick
-		ball = new Ball(ballSpeedX, ballSpeedY, DrawingType.Oval);
+		ball = new Ball(0, 0, DrawingType.Oval);
 		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 100, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		//create blocks and random walls
 		Random roller=new Random();
@@ -298,6 +302,12 @@ public class BouncingBallGame extends GameState{
 		}else if(keyCode == KeyEvent.VK_RIGHT){
 			stick.setDiffX(stickSpeed);
 		}
+		
+		if(keyCode == KeyEvent.VK_SPACE && !gameStarted){
+			ball.setSpeedX(ballSpeedX);
+			ball.setSpeedY(ballSpeedY);
+			gameStarted = true;
+		}
 	}
 
 	@Override
@@ -344,5 +354,11 @@ public class BouncingBallGame extends GameState{
 			ball.setSpeedX(0);
 			ball.setSpeedY(0);
 		}
+	}
+	
+	public void pauseGame(){
+		ball.setSpeedX(0);
+		ball.setSpeedY(0);
+		gameStarted = false;
 	}
 }
