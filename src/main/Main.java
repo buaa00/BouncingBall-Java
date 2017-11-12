@@ -20,7 +20,7 @@ public class Main {
 		new BouncingBallGame(bbHost);
 		new BouncingBallGameBlurState(bbHost);
 		new BouncingBallFinishedState(bbHost);
-		
+		new BouncingBallDeadState(bbHost);
 		bbHost.setState("GameState");
 	}
 

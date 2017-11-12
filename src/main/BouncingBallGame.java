@@ -196,7 +196,7 @@ public class BouncingBallGame extends GameState{
 	public void update() {
 		//ako je igrac izgubio sve zivote
 		if(player.isDead()){
-			return;
+			BouncingBallGameTransition.transitionTo("Dead", TransitionType.ZoomIn,0.01f);
 		}
 		
 		//menjanje frejmova vatre
@@ -295,9 +295,10 @@ public class BouncingBallGame extends GameState{
 			}else if(ball.getRestrictedSide() == Ball.UP){
 				updateBallSpeed(1, -1);
 			}else{
-//				player.die();
-//				gameOver();
-				updateBallSpeed(1, -1);
+				player.die();
+				pauseGame();
+ 		  		gameOver();
+ 			//	updateBallSpeed(1, -1);
 //				return;
 			}
 			
@@ -365,7 +366,7 @@ public class BouncingBallGame extends GameState{
 			if(currentLevel < maxLevel){
 				currentLevel++;
 			}else{
-				//hedluj kraj
+				BouncingBallGameTransition.transitionTo("Finished", TransitionType.ZoomIn,0.01f);
 			}
 			
 			ball.setSpeedX(0);
@@ -412,7 +413,6 @@ public class BouncingBallGame extends GameState{
 			((BouncingBallGameBlurState)host.getState("Blur")).setImage(snapshot);  //setovanje blurovanog
 			System.out.println("IDEM U BLUR");
 			BouncingBallGameTransition.transitionTo("Blur", TransitionType.ZoomIn,0.01f);
-			//BouncingBallGameTransition.transitionTo("Finished", TransitionType.ZoomIn,0.01f);
 
 		}
 	}
