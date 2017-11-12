@@ -10,7 +10,7 @@ public class Player extends GameObject {
 	
 	private int health;
 	private int score;
-	
+	private int level;
 	 
 	 
 	public Player(int x, int y, int width, int height, DrawingType type) {
@@ -18,10 +18,11 @@ public class Player extends GameObject {
 		this.health=3;
 		this.score=0;
 	}
-	public Player(int x, int y, int width, int height, DrawingType type, int health, int score) {
+	public Player(int x, int y, int width, int height, DrawingType type, int health, int score, int level) {
 		super(x, y, width, height, type);
 		this.health=health;
 		this.score=score;
+		this.level=level;
 	}
 	
 	
@@ -50,10 +51,21 @@ public class Player extends GameObject {
 			movement+=fm.charWidth(s.charAt(i));
 		}
 		movement+=5;  // distance betweens string and hearth
+		int newmov=movement;
 		for (int i=0;i<this.health;i++) {
 			drawHeart(g,movement+20+i*20,h/2-10,20,h); 
+			newmov+=25;
 		}
 		
+		c=g.getColor();
+		g.setColor(Color.WHITE);
+		newmov+=300;
+		StringBuilder sb1=new StringBuilder();
+		sb1.append("LEVEL: ");
+		sb1.append(this.level);
+		String s1=sb1.toString();
+		g.drawString(s1, newmov, h);
+		g.setColor(c);
 	}
 	
 	//draw Hearth
@@ -101,6 +113,12 @@ public class Player extends GameObject {
 	}
 	public void setScore(int score) {
 		this.score = score;
+	}
+	public int getLevel() {
+		return level;
+	}
+	public void setLevel(int level) {
+		this.level = level;
 	}
 	
 	public void die(){

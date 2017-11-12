@@ -70,8 +70,7 @@ public class BouncingBallGame extends GameState{
 	
 	private boolean gameStarted;
 	
-	private int currentLevel = 1;
-	private int maxLevel = 4;
+ 
 	
 	private ArrayList<GameObject> firedSurprises;
 	
@@ -90,7 +89,7 @@ public class BouncingBallGame extends GameState{
 		firedSurprises = new ArrayList<>();
 		
 		//create Player
-		player=new Player(0, 0, 500, 20, DrawingType.Rect, 3, 0);
+		player=new Player(0, 0, 500, 20, DrawingType.Rect, 3, 0, 1);
 		
 		//create walls left and right
 		Wall leftWall=new Wall(0,0,20,scrHeight,DrawingType.Rect);
@@ -169,7 +168,7 @@ public class BouncingBallGame extends GameState{
 		starTrek.draw(g, sw, sh);
 		
 		player.draw(g);
-		drawLevel(g);
+		//drawLevel(g);
 		
 		stick.draw(g);
 		
@@ -198,7 +197,6 @@ public class BouncingBallGame extends GameState{
 		if(player.isDead()){
 			BouncingBallGameTransition.transitionTo("Dead", TransitionType.ZoomIn,0.01f);
 		}
-		
 		//menjanje frejmova vatre
 		for(Fire f:fire){
 			f.update();
@@ -298,7 +296,7 @@ public class BouncingBallGame extends GameState{
 				player.die();
 				pauseGame();
  		  		gameOver();
- 			//	updateBallSpeed(1, -1);
+ 	//			updateBallSpeed(1, -1);
 //				return;
 			}
 			
@@ -363,11 +361,7 @@ public class BouncingBallGame extends GameState{
 	
 	private void checkEnd() {
 		if (checkBlocks(blocks)) {
-			if(currentLevel < maxLevel){
-				currentLevel++;
-			}else{
-				BouncingBallGameTransition.transitionTo("Finished", TransitionType.ZoomIn,0.01f);
-			}
+
 			
 			ball.setSpeedX(0);
 			ball.setSpeedY(0);
@@ -392,28 +386,15 @@ public class BouncingBallGame extends GameState{
 			
 			this.renderSnapshot(snapshot);
 			
-			File outputfile = new File("cistak.jpg");
-			try {
-				ImageIO.write(snapshot, "jpg", outputfile);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 			
 			((BouncingBallGameBlurState)host.getState("Blur")).setImageclear(snapshot); //setovanje cistog  
 			snapshot=blur(snapshot);
-			File outputfile1 = new File("blurko.jpg");
-			
-			try {
-				ImageIO.write(snapshot, "jpg", outputfile1);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			 
 			((BouncingBallGameBlurState)host.getState("Blur")).setImage(snapshot);  //setovanje blurovanog
+			
+			int level=this.player.getLevel();
 			System.out.println("IDEM U BLUR");
 			BouncingBallGameTransition.transitionTo("Blur", TransitionType.ZoomIn,0.01f);
-
 		}
 	}
 	
@@ -547,8 +528,10 @@ public class BouncingBallGame extends GameState{
 	public int getBallStartY() {
 		return ballStartY;
 	}
-	
-	private void drawLevel(Graphics2D g){
+	public Player getPlayer() {
+		return player;
+	}
+/*	private void drawLevel(Graphics2D g){
 		g.setColor(Color.WHITE);
 		Font f=new Font("Dialog", Font.BOLD, 16);
 		g.setFont(f);
@@ -561,7 +544,7 @@ public class BouncingBallGame extends GameState{
 		}
 		g.drawString(s, scrWdith-size-50, h);
 	}
-	
+	*/
 	public ArrayList<GameObject> getBlocks() {
 		return blocks;
 	}

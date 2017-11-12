@@ -106,29 +106,36 @@ public class BouncingBallGameBlurState extends GameState {
 	public void update() {
 		if (radius>640) {
 			BouncingBallGame bg = ((BouncingBallGame)host.getState("GameState"));
-			ArrayList<GameObject> list=bg.getBlocks();
-			bg.getBlocks().clear();
-			ArrayList<GameObject> list1=bg.getWalls();
-			bg.getWalls().clear();
+			if (bg.getPlayer().getLevel()==3) {
+				BouncingBallGameTransition.transitionTo("Finished", TransitionType.ZoomIn,2f);
+			}
+			else {
+				bg.getPlayer().setLevel(bg.getPlayer().getLevel()+1);
+				ArrayList<GameObject> list=bg.getBlocks();
+				bg.getBlocks().clear();
+				ArrayList<GameObject> list1=bg.getWalls();
+				bg.getWalls().clear();
+				
+				Wall leftWall=new Wall(0,0,20,480,DrawingType.Rect);
+				Wall rightWall=new Wall(640-20,0,20,480,DrawingType.Rect);
+				bg.getWalls().add(leftWall);
+				bg.getWalls().add(rightWall);
+				
+				((BouncingBallGame)host.getState("GameState")).createLevel();
+				Stick s=((BouncingBallGame)host.getState("GameState")).getStick();
+				System.out.println("VRACAM SE U GAME");
+				((BouncingBallGame)host.getState("GameState")).getStick().setY(s.getY()-50);
+				
+				
+				Ball ball = bg.getBall();
+				ball.setX(bg.getBallStartX());
+				ball.setY(bg.getBallStartY());
+				
+				bg.pauseGame();
+				
+				BouncingBallGameTransition.transitionTo("GameState", TransitionType.Crossfade,10f);
+			}
 			
-			Wall leftWall=new Wall(0,0,20,480,DrawingType.Rect);
-			Wall rightWall=new Wall(640-20,0,20,480,DrawingType.Rect);
-			bg.getWalls().add(leftWall);
-			bg.getWalls().add(rightWall);
-			
-			((BouncingBallGame)host.getState("GameState")).createLevel();
-			Stick s=((BouncingBallGame)host.getState("GameState")).getStick();
-			System.out.println("VRACAM SE U GAME");
-			((BouncingBallGame)host.getState("GameState")).getStick().setY(s.getY()-50);
-			
-			
-			Ball ball = bg.getBall();
-			ball.setX(bg.getBallStartX());
-			ball.setY(bg.getBallStartY());
-			
-			bg.pauseGame();
-			
-			BouncingBallGameTransition.transitionTo("GameState", TransitionType.Crossfade,10f);
 			
 		}
 		
