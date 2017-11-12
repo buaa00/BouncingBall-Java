@@ -2,6 +2,7 @@ package game_objects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 public class Stick extends GameObject{
 	private final Color stickColor = new Color(135, 108, 68);
@@ -50,7 +51,13 @@ public class Stick extends GameObject{
 
 	@Override
 	public boolean intersect(GameObject o) {
-		// TODO Auto-generated method stub
+		if(o.getType() == DrawingType.Rect){
+			Rectangle r1 = new Rectangle(x, y, width, height);
+			Rectangle r2 = new Rectangle(o.getX(),o.getY(),o.getWidth(),o.getHeight());
+			
+			return r1.intersects(r2);
+		}
+		
 		return false;
 	}
 

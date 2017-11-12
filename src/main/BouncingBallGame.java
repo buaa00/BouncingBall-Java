@@ -3,7 +3,10 @@ package main;
 import java.awt.AWTException;
 import java.awt.Canvas;
 import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+import java.awt.Label;
 import java.awt.Robot;
 import java.util.ArrayList;
 import java.util.Random;
@@ -24,6 +27,7 @@ import game_objects.BigBlock;
 import game_objects.DrawingType;
 import game_objects.Fire;
 import game_objects.GameObject;
+import game_objects.Laser;
 import game_objects.NormalBlock;
 import game_objects.Player;
 import game_objects.StarTrek;
@@ -64,19 +68,28 @@ public class BouncingBallGame extends GameState{
 	
 	private boolean gameStarted;
 	
+	private int currentLevel = 1;
+	private int maxLevel = 4;
+	
+	private ArrayList<GameObject> firedSurprises;
+	
 	
 	public BouncingBallGame(GameHost host) {
 		super(host);
 		
 		gameStarted = false;
 		
+		
 		blocks=new ArrayList<>();
 		walls=new ArrayList<>();
 		scrWdith = host.getWidth();
 		scrHeight = host.getHeight();
 		snapshot=new BufferedImage(scrWdith, scrHeight, BufferedImage.TYPE_3BYTE_BGR);
+		firedSurprises = new ArrayList<>();
+		
 		//create Player
 		player=new Player(0, 0, 500, 20, DrawingType.Rect, 3, 0);
+		
 		//create walls left and right
 		Wall leftWall=new Wall(0,0,20,scrHeight,DrawingType.Rect);
 		Wall rightWall=new Wall(scrWdith-20,0,20,scrHeight,DrawingType.Rect);
@@ -84,7 +97,6 @@ public class BouncingBallGame extends GameState{
 		walls.add(rightWall);
 		
 		//create ball and stick
-		
 
 		ball = new Ball(0, 0, DrawingType.Oval);
 		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 100, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
@@ -155,6 +167,7 @@ public class BouncingBallGame extends GameState{
 		starTrek.draw(g, sw, sh);
 		
 		player.draw(g);
+		drawLevel(g);
 		
 		stick.draw(g);
 		
@@ -169,6 +182,10 @@ public class BouncingBallGame extends GameState{
 		
 		for(Fire f : fire){
 			f.draw(g);
+		}
+		
+		for(GameObject sup:firedSurprises){
+			sup.draw(g);
 		}
 		
 	}
@@ -222,7 +239,6 @@ public class BouncingBallGame extends GameState{
 				if(remove instanceof NormalBlock){
 					blocks.remove(remove);
 					player.setScore(player.getScore()+1);
-					this.checkEnd();
 					
 				}else if(remove instanceof BigBlock){
 					BigBlock b = (BigBlock) remove;
@@ -230,16 +246,44 @@ public class BouncingBallGame extends GameState{
 					if(b.getHealth() == 0){
 						blocks.remove(remove);
 						player.setScore(player.getScore()+b.getValue());
-						this.checkEnd();
 					}
 				}
 				else if (remove instanceof SupriseBlock) {
 					blocks.remove(remove);
-					this.checkEnd();
-					//HANDLE DROPING SUPRISE OBJECT
+					GameObject surprise = ((SupriseBlock) remove).fire();
+					firedSurprises.add(surprise);
+					
+					//surprise bonus
+					int bonus = (int)(Math.random()*100) + 1;
+					if(Math.random() > 0.8){
+						bonus *= -1;
+					}
+					
+					player.setScore(player.getScore() + bonus);
 				}
 			}
 		}
+		
+		checkEnd();
+		
+		ArrayList<GameObject> removeSurprises = new ArrayList<>();
+		
+		//azuriranje iznenadjenja
+		for(GameObject o:firedSurprises){
+			if(!o.update()){
+				removeSurprises.add(o);
+				continue;
+			}
+		}
+		
+		for(GameObject sup:firedSurprises){
+			if(stick.intersect(sup)){
+				player.die();
+				removeSurprises.add(sup);
+			}
+		}
+		
+		firedSurprises.removeAll(removeSurprises);
 		
 		//provera dozvoljenog kretanja loptice
 		//i azuriranje trenutne pozicicje
@@ -295,6 +339,10 @@ public class BouncingBallGame extends GameState{
 			ball.setSpeedY(ballSpeedY);
 			gameStarted = true;
 		}
+		
+		if(keyCode == KeyEvent.VK_F){
+			blocks.clear();
+		}
 	}
 
 	@Override
@@ -312,6 +360,12 @@ public class BouncingBallGame extends GameState{
 	
 	private void checkEnd() {
 		if (checkBlocks(blocks)) {
+			if(currentLevel < maxLevel){
+				currentLevel++;
+			}else{
+				//hedluj kraj
+			}
+			
 			ball.setSpeedX(0);
 			ball.setSpeedY(0);
 			
@@ -401,7 +455,7 @@ public class BouncingBallGame extends GameState{
 					walls.add(middleWall);
 				}
 				if (num>5 && num<=10) {
-					SupriseBlock supriseBlock= new SupriseBlock(x, y, fixWidth, fixHeight, DrawingType.Rect);
+					SupriseBlock supriseBlock= new SupriseBlock(x, y, fixWidth, fixHeight, DrawingType.Rect, new Laser(x, y, y-10, 480, DrawingType.Rect));
 					blocks.add(supriseBlock);
 				}
 				if (num>10 && num<=95) {
@@ -414,6 +468,7 @@ public class BouncingBallGame extends GameState{
 				}
 			}
 		}
+		
 	}
 	
 	
@@ -470,5 +525,19 @@ public class BouncingBallGame extends GameState{
 	
 	public int getBallStartY() {
 		return ballStartY;
+	}
+	
+	private void drawLevel(Graphics2D g){
+		g.setColor(Color.WHITE);
+		Font f=new Font("Dialog", Font.BOLD, 16);
+		g.setFont(f);
+		FontMetrics fm=g.getFontMetrics();
+		String s="LEVEL: "+ currentLevel;
+		int size=0;
+		int h=fm.getHeight();
+		for (int i=0;i<s.length();i++) {
+			size+= fm.charWidth(s.charAt(i));
+		}
+		g.drawString(s, scrWdith-size-50, h);
 	}
 }
