@@ -34,8 +34,23 @@ public class NormalBlock extends GameObject {
 	@Override
 	public void draw(Graphics2D g) {
 		Color c=g.getColor();
-		g.setColor(Color.PINK);
+		g.setColor(new Color(206, 85, 10));
+//		g.setColor(new Color(255,148,81));
 		g.fillRect(this.x, this.y, this.width, this.height);
+		
+		int offset = 2;
+		
+		g.setColor(new Color(255,148,81));
+//		g.setColor(new Color(206, 85, 10));
+		//gore
+//		g.fillRect(x+offset, y, width-2*offset, offset);
+		//levo
+//		g.fillRect(x, y+offset, offset, height-2*offset);
+		//desno
+		g.fillRect(x+width-offset, y, offset, height-offset);
+		//dole
+		g.fillRect(x, y+height-offset, width-offset, offset);
+		
 		g.setColor(c);
 	}
 

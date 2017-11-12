@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 
 public class Stick extends GameObject{
-	private final Color stickColor = Color.GREEN;
+	private final Color stickColor = new Color(135, 108, 68);
 	
 	private int diffX = 0;
 	private int minX;
@@ -29,7 +29,22 @@ public class Stick extends GameObject{
 	public void draw(Graphics2D g) {
 		Color oldColor = g.getColor();
 		g.setColor(stickColor);
+		
 		g.fillRect(x, y, width, height);
+		
+		int offset = 1;
+		
+		g.setColor(new Color(216,162,60));
+		//gore
+		g.fillRect(x+offset, y, width-2*offset, offset);
+		offset++;
+		//levo
+		g.fillRect(x, y+offset, offset, height-2*offset);
+		//desno
+		g.fillRect(x+width-(offset), y+offset, offset, height-2*offset);
+		//dole
+		g.fillRect(x+offset, y+height-offset, width-2*offset, offset);
+		
 		g.setColor(oldColor);
 	}
 

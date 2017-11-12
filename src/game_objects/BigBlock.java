@@ -41,7 +41,7 @@ public class BigBlock extends GameObject {
 	@Override
 	public void draw(Graphics2D g) {
 		Color c=g.getColor();
-		g.setColor(Color.BLUE);
+		g.setColor(new Color(1, 50, 135));
 		g.fillRect(this.x, this.y, this.width, this.height);
 		g.setColor(Color.WHITE);
 		Font f=new Font("Dialog", Font.BOLD, 16);
@@ -54,6 +54,22 @@ public class BigBlock extends GameObject {
 			size+= fm.charWidth(s.charAt(i));
 		}
 		g.drawString(s, x+(width-size)/2, y+h-height/4);
+		
+		
+		int offset = 2;
+		
+		g.setColor(new Color(78,123,201));
+//		g.setColor(new Color(206, 85, 10));
+		//gore
+//		g.fillRect(x+offset, y, width-2*offset, offset);
+		//levo
+//		g.fillRect(x, y+offset, offset, height-2*offset);
+		//desno
+		g.fillRect(x+width-offset, y, offset, height-offset);
+		//dole
+		g.fillRect(x, y+height-offset, width-offset, offset);
+		
+		
 		g.setColor(c);
 	}
 	@Override

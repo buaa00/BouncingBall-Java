@@ -103,4 +103,14 @@ public class Player extends GameObject {
 		this.score = score;
 	}
 	
+	public void die(){
+		this.health--;
+		if(health<0){
+			health = 0;
+		}
+	}
+	
+	public boolean isDead(){
+		return health <= 0;
+	}
 }

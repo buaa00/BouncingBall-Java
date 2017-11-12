@@ -22,9 +22,11 @@ import java.io.IOException;
 import game_objects.Ball;
 import game_objects.BigBlock;
 import game_objects.DrawingType;
+import game_objects.Fire;
 import game_objects.GameObject;
 import game_objects.NormalBlock;
 import game_objects.Player;
+import game_objects.StarTrek;
 import game_objects.SupriseBlock;
 import game_objects.Wall;
 import main.BouncingBallGameTransition.TransitionType;
@@ -38,10 +40,17 @@ import rafgfxlib.Util;
 import java.awt.Robot;
 
 public class BouncingBallGame extends GameState{
+	public static class Star
+	{
+		public float posX;
+		public float posY;
+		public float posZ;
+	}
 	
 	private Player player;
 	private Ball ball;
 	private Stick stick;
+	private ArrayList<Fire> fire;
 	private int scrWdith;
 	private int scrHeight;
 	private ArrayList<GameObject> blocks;
@@ -50,10 +59,24 @@ public class BouncingBallGame extends GameState{
 	private final int stickHeight = 15;
 	private BufferedImage snapshot;
     private Robot robot ;
+	private final int stickSpeed = 15;
+	private int ballStartX;
+	private int ballStartY;
+	private int ballWidth = 20;
+	private int ballHeight = 20;
+	private int ballSpeedX = 4;
+	private int ballSpeedY = 4;
+	
+	private StarTrek starTrek;
+	
+	private boolean gameStarted;
+	
 	
 	public BouncingBallGame(GameHost host) {
 		super(host);
-		host.setUpdateRate(60);
+		
+		gameStarted = false;
+		
 		blocks=new ArrayList<>();
 		walls=new ArrayList<>();
 		scrWdith = host.getWidth();
@@ -64,20 +87,44 @@ public class BouncingBallGame extends GameState{
 		//create walls left and right
 		Wall leftWall=new Wall(0,0,20,scrHeight,DrawingType.Rect);
 		Wall rightWall=new Wall(scrWdith-20,0,20,scrHeight,DrawingType.Rect);
-		walls.add(leftWall); walls.add(rightWall);
+		walls.add(leftWall);
+		walls.add(rightWall);
 		
 		//create ball and stick
-		ball = new Ball(3, 3, DrawingType.Oval);
-		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 80, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		
+
+		ball = new Ball(0, 0, DrawingType.Oval);
+		stick = new Stick(scrWdith/2 - stickWidth/2, scrHeight - 100, stickWidth, stickHeight, 20, scrWdith - 20, DrawingType.Rect);
 		
 		createLevel();
 		
-		ball.setX(scrWdith/2-7);
-		ball.setY(150);
-		ball.setWidth(15);
-		ball.setHeight(15);
+		ballStartX = scrWdith/2-7;
+		ballStartY = 150;
+		
+		ball.setX(ballStartX);
+		ball.setY(ballStartY);
+		ball.setWidth(ballWidth);
+		ball.setHeight(ballHeight);
 		ball.setRestrictedMovement(20, 0, scrWdith-20, scrHeight);
+		
+		//instancing fire
+		fire = new ArrayList<>();
+		
+		Fire fireSprite = new Fire(0, 0, DrawingType.Rect);
+		
+		int fireY = scrHeight-fireSprite.getHeight();
+		fireSprite.setY(fireY);
+
+		int offsetX = 50;
+		while(offsetX <= scrWdith - 50){
+			fire.add(fireSprite);
+			fireSprite = new Fire(20, fireY, DrawingType.Rect);
+			fireSprite.setOffset(offsetX, 0);
+			offsetX += 50;
+		}
+		
+		starTrek = new StarTrek();
+		
 		
 	}
 
@@ -103,6 +150,7 @@ public class BouncingBallGame extends GameState{
 	public void suspendState() {
 		// TODO Auto-generated method stub
 		
+		
 	}
 
 	@Override
@@ -111,7 +159,11 @@ public class BouncingBallGame extends GameState{
 		g.setColor(Color.BLACK);
 		g.fillRect(0, 0, host.getWidth(), host.getHeight());
 		
+		starTrek.draw(g, sw, sh);
+		
 		player.draw(g);
+		
+		stick.draw(g);
 		
 		for (GameObject block:blocks) {
 			block.draw(g);
@@ -119,36 +171,60 @@ public class BouncingBallGame extends GameState{
 		for (GameObject wall:walls) {
 			wall.draw(g);
 		}
-		stick.draw(g);
+		
 		ball.draw(g);
+		
+		for(Fire f : fire){
+			f.draw(g);
+		}
+		
 	}
 
 	@Override
 	public void update() {
-		//odbijanje o palicu
-		if(ball.intersect(stick)){
-			int sgnX = Math.random() > 0.5 ? -1 : 1;
-			updateBallSpeed(1, -1);
+		//ako je igrac izgubio sve zivote
+		if(player.isDead()){
+			return;
 		}
 		
+		//menjanje frejmova vatre
+		for(Fire f:fire){
+			f.update();
+		}
+		
+		//azuriranje pozicije stika
+		stick.update();
+		
+		//odbijanje o palicu
+		if(ball.intersect(stick)){
+			changeBallDirection();
+		}
+		
+		//provera sudara sa zidom
 		boolean wallCollision = false;
 		
 		for(GameObject o:walls){
 			if(ball.intersect(o)){
-				updateBallSpeed(1, -1);
+				changeBallDirection();
 				wallCollision = true;
 			}
 		}
 		
+		//ako se nije desio sudar sa zidom
 		if(!wallCollision){
+			
+			//provera da li se loptica sudarila sa nekim od blokova
 			GameObject remove = null;
 			for(GameObject o:blocks){
 				if(ball.intersect(o)){
 					remove = o;
-					updateBallSpeed(1, -1);
+					changeBallDirection();
+					break;
 				}
 			}
 			
+			//ukoliko se loptica sudarlia sa nekim od blokova
+			//igra se razlicito odvija u zavisnosti od vrste bloka
 			if(remove != null){
 				if(remove instanceof NormalBlock){
 					blocks.remove(remove);
@@ -172,23 +248,29 @@ public class BouncingBallGame extends GameState{
 			}
 		}
 		
-		
-		stick.update();
+		//provera dozvoljenog kretanja loptice
+		//i azuriranje trenutne pozicicje
 		if(!ball.update()){
 			if(ball.getRestrictedSide() == Ball.LEFT || ball.getRestrictedSide() == Ball.RIGHT){
 				updateBallSpeed(-1, 1);
-			}else{
+			}else if(ball.getRestrictedSide() == Ball.UP){
 				updateBallSpeed(1, -1);
+			}else{
+				player.die();
+				gameOver();
+				return;
 			}
 			
 			ball.update();
 		}
+		
+		
+		starTrek.update();
 	}
 
 	@Override
 	public void handleMouseDown(int x, int y, GFMouseButton button) {
-		// TODO Auto-generated method stub
-		
+//		System.out.println(x + " " + y);
 	}
 
 	@Override
@@ -199,16 +281,25 @@ public class BouncingBallGame extends GameState{
 
 	@Override
 	public void handleMouseMove(int x, int y) {
-		// TODO Auto-generated method stub
-		
+		if(x>stick.getX() + 4*stick.getWidth()/6){
+			stick.setDiffX(stickSpeed);
+		}else if(x<stick.getX() + 3*stick.getWidth()/6){
+			stick.setDiffX(-stickSpeed);
+		}
 	}
 
 	@Override
 	public void handleKeyDown(int keyCode) {
 		if(keyCode == KeyEvent.VK_LEFT){
-			stick.setDiffX(-10);
+			stick.setDiffX(-stickSpeed);
 		}else if(keyCode == KeyEvent.VK_RIGHT){
-			stick.setDiffX(10);
+			stick.setDiffX(stickSpeed);
+		}
+		
+		if(keyCode == KeyEvent.VK_SPACE && !gameStarted){
+			ball.setSpeedX(ballSpeedX);
+			ball.setSpeedY(ballSpeedY);
+			gameStarted = true;
 		}
 	}
 
@@ -339,4 +430,43 @@ public class BouncingBallGame extends GameState{
 		return stick;
 	}
 	
+	private void changeBallDirection(){
+		if(ball.getIntersectionSide() == ball.UP){
+//			System.out.println("gore");
+			if(ball.getSpeedY()>0){
+				updateBallSpeed(1, -1);
+			}
+		}else if(ball.getIntersectionSide() == ball.RIGHT){
+//			System.out.println("desno");
+			if(ball.getSpeedX()<0){
+				updateBallSpeed(-1, 1);
+			}
+		}else if(ball.getIntersectionSide() == ball.DOWN){
+//			System.out.println("dole");
+			if(ball.getSpeedY() < 0){
+				updateBallSpeed(1, -1);
+			}
+		}else if(ball.getIntersectionSide() == ball.LEFT){
+//			System.out.println("levo");
+			if(ball.getSpeedX() > 0){
+				updateBallSpeed(-1, 1);
+			}
+		}
+	}
+
+	public void gameOver(){
+		if(!player.isDead()){
+			ball.setX(ballStartX);
+			ball.setY(ballStartY);
+		}else{
+			ball.setSpeedX(0);
+			ball.setSpeedY(0);
+		}
+	}
+	
+	public void pauseGame(){
+		ball.setSpeedX(0);
+		ball.setSpeedY(0);
+		gameStarted = false;
+	}
 }

@@ -2,15 +2,19 @@ package game_objects;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.lang.ref.ReferenceQueue;
+
+import com.sun.corba.se.impl.oa.toa.TOA;
+
 
 /**
  * @author buaa
  *
  */
 public class Ball extends GameObject{
-	private static final Color ballColor = Color.GRAY;
+	private static final Color ballColor = Color.RED;
 	
 	public static final int LEFT = 1;
 	public static final int RIGHT = 2;
@@ -26,6 +30,7 @@ public class Ball extends GameObject{
 	private int minY = -1;
 	private boolean restrictedMovement = false;
 	private int restrictedSide = NONE;
+	private int intersectionSide = NONE;
 	
 	
 	public Ball(DrawingType type) {
@@ -81,6 +86,31 @@ public class Ball extends GameObject{
 	@Override
 	public void draw(Graphics2D g) {
 		Color oldColor = g.getColor();
+		int offsetW = width/6;
+		int offsetH = height/6;
+		
+		int offsetX = 3*speedX/5;
+		int offsetY = 3*speedY/5;
+		
+		Color c = new Color(255, 255, 255);
+		int offsetR = (255-ballColor.getRed())/5;
+		int offsetG = (255-ballColor.getGreen())/5;
+		int offsetB = (255-ballColor.getBlue())/5;
+		
+		
+		for(int i=1;i<6;i++){
+			g.setColor(c);
+			
+			if(speedX > 0 && speedY > 0){
+				g.fillOval(x-(6-i)*offsetX, y-(6-i)*offsetY, offsetW*i, offsetH*i);
+			}else if(speedX < 0 && speedY > 0){
+				g.fillOval(x + width - offsetW*i - (6-i)*offsetX, y-(6-i)*offsetY, offsetW*i, offsetH*i);
+			}
+			
+			
+			c = new Color(255 - i*offsetR, 255 - i*offsetG, 255 - i*offsetB);
+		}
+		
 		g.setColor(ballColor);
 		g.fillOval(x, y, width, height);
 		g.setColor(oldColor);
@@ -91,8 +121,31 @@ public class Ball extends GameObject{
 		if(o.getType() == DrawingType.Rect){
 			Rectangle r1 = new Rectangle(x, y, width, height);
 			Rectangle r2 = new Rectangle(o.getX(),o.getY(),o.getWidth(),o.getHeight());
+			Rectangle r = r1.intersection(r2);
 			
+			intersectionSide = NONE;
+			if(r1.intersects(r2)){
+				if(x<o.getX() && x+width >= o.getX()){
+					intersectionSide = LEFT;
+				}
+				
+				if(x<=o.getX()+o.getWidth() && x+width>o.getX()+o.getWidth()){
+					intersectionSide = RIGHT;
+				}
+				
+				if(y<o.getY() && y+height >= o.getY()){
+					intersectionSide = UP;
+				}
+				
+				if(y<=o.getY()+o.getHeight() && y+height>o.getY()+o.getHeight()){
+					intersectionSide = DOWN;
+				}
+				
+//				System.out.println(left + " " + up + " " + right + " " + down);
+			}
 			return r1.intersects(r2);
+			
+			
 		}else if(o.getType() == DrawingType.Oval){
 			return false;
 		}
@@ -169,4 +222,23 @@ public class Ball extends GameObject{
 		return restrictedSide;
 	}
 
+	private static boolean lineCircleIntersection(Point p1, Point p2, Point c, double r){
+		Point t = new Point((p1.x+p2.x)/2, (p2.y+p1.y)/2);
+		double dist = t.distance(c);
+		return dist<=r;
+		
+//		double k = ((double)p2.y - p1.y)/((double)p2.x-p1.x);
+//		double n = -(k*p1.x + p1.y);
+//		System.out.println(r*r*(k*k+1) - (k*c.x - c.y + n)*(k*c.x - c.y + n));
+//		return r*r*(k*k+1) - (k*c.x - c.y + n)*(k*c.x - c.y + n) >= 0;
+	}
+	
+	public double getRadius(){
+		double r = Math.sqrt(width*width + height*height)/2;
+		return r;
+	}
+	
+	public int getIntersectionSide() {
+		return intersectionSide;
+	}
 }
